@@ -1,28 +1,41 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-app>
+    <v-app-bar
+      app
+      color="primary"
+      dark
+      dense
+    >
+      <div class="d-flex align-center">
+        <v-icon size='40'> mdi-newspaper-plus</v-icon>
+
+        <div class=' text-h4'>YBM</div>
+      </div>
+
+    </v-app-bar>
+
+
+    <v-main>
+
+      <createMenu/>
+
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import createMenu from "./components/menu/createMenu"
 
 export default {
   name: 'App',
-  components: {
-    HelloWorld
-  }
-}
-</script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+  components: {
+    createMenu
+  },
+
+  data: () => ({
+    //
+
+  }),
+};
+</script>
