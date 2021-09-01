@@ -18,10 +18,11 @@
           class="d-none"
           hide-input
           @change="Preview_image"
-          v-model="image"
+          v-model="photo.image"
+
         >
         </v-file-input>
-        <v-img height="200" v-if="url" :src="url">
+        <v-img height="200" v-if="photo.url" :src="photo.url">
           <template v-slot:placeholder>
             <v-row class="fill-height ma-0" align="center" justify="center">
               <v-progress-circular
@@ -52,8 +53,10 @@ export default {
   data: () => ({
     input: undefined,
     show: false,
-    url: null,
-    image: null,
+    photo: {
+      url:null,
+      image:null
+    }
   }),
 
   props: {
@@ -79,8 +82,14 @@ export default {
       this.input.click();
     },
 
+    onPreloadImage () {
+      this.$emit('loadImage', this.photo.url)
+    },
+
     Preview_image() {
-      this.url = URL.createObjectURL(this.image);
+      this.photo.url = URL.createObjectURL(this.photo.image);
+      this.onPreloadImage()
+
     },
   },
 };

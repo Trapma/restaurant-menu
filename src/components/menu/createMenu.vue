@@ -158,7 +158,65 @@
 
                     <!--dishCard  -->
                     <v-col>
-                      <dishCard :dish_data="dish" />
+                      <dishCard :dish_data="dish" @loadImage="imageLoad" />
+                    </v-col>
+                  </v-row>
+                </v-container>
+                <v-container>
+                  <v-row>
+                    <v-col
+                      @click="select(dish)"
+                      v-for="dish in dishes"
+                      :key="dish.id"
+                    >
+                      <v-card
+                        outline
+                        class="mx-auto mb-10 py-auto"
+                        max-width="344"
+                      >
+                        <v-card-title>
+                          {{ dish.name }}
+                        </v-card-title>
+
+                        <!-- если не сработает, нужно создать путь -->
+                        <v-img height="200" v-bind:src="dish.image">
+                          <template v-slot:placeholder>
+                            <v-row
+                              class="fill-height ma-0"
+                              align="center"
+                              justify="center"
+                            >
+                              <v-progress-circular
+                                indeterminate
+                                color="grey lighten-5"
+                              ></v-progress-circular>
+                            </v-row>
+                          </template>
+                        </v-img>
+
+                        <v-card-text class="body-1">
+                          {{ dish.description }}
+                        </v-card-text>
+                        <v-card-subtitle class="py-0">
+                          <p class="text-right">
+                            в порции содержится: {{ dish.ccal }}ккал
+                          </p>
+                        </v-card-subtitle>
+                        <v-row justify="end">
+                          <v-card-title class="mr-4">
+                            <p class="text-right">{{ dish.price }}₽</p>
+                          </v-card-title>
+                        </v-row>
+                        <v-card-actions>
+                          <v-btn
+                            color="orange lighten-2"
+                            text
+                            @click.stop="handleDelete(dish)"
+                          >
+                            Удалить
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -191,11 +249,15 @@ export default {
       type: "",
     },
     dish: {
+      id: "",
       name: "",
       price: "",
       description: "",
       ccal: "",
+      image: "",
     },
+    url: "",
+    selectedDish: null,
 
     categoryList: [],
     categories: [],
@@ -242,18 +304,26 @@ export default {
   },
 
   methods: {
+    //imageLoad
+    imageLoad(data) {
+      this.dish.image = data;
+      console.log("test image load", this.dish.image);
+    },
+
     //dishForm methods
     validate() {
-      this.$refs.form.validate();
+      if (this.$refs.form.validate()) {
+        this.createDish();
+      }
     },
+
     reset() {
-      this.dish.name = ''
-      this.dish.price = ''
-      this.dish.description = ''
-      this.dish.ccal = ''
-      this.$refs.form.resetValidation()()
-
-
+      this.dish.id = "";
+      this.dish.name = "";
+      this.dish.price = "";
+      this.dish.description = "";
+      this.dish.ccal = "";
+      this.$refs.form.resetValidation();
     },
 
     async getData() {
@@ -316,10 +386,112 @@ export default {
           for (let i = 0; i < dish.length; i++) {
             const d = dish[i];
 
+            this.dishes = [];
             this.dishes.push(d);
           }
         }
       }
+      console.log("get dishes data", this.dishes);
+    },
+    async select(dish) {
+      this.selectedDish = dish;
+      console.log("selected dish", dish);
+
+      this.filter.kind = dish.kind;
+      this.filter.category = dish.category;
+      this.filter.type = dish.type;
+
+      this.dish.name = dish.name;
+      this.dish.price = dish.price;
+      this.dish.description = dish.description;
+      this.dish.ccal = dish.ccal;
+      this.dish.image = dish.image;
+      this.dish.id = dish.id;
+    },
+
+    async patchDish() {
+      const id = this.dish.id;
+      const response = await fetch(`http://localhost:3000/dishes/${id}`, {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          kind: this.filter.kind,
+          category: this.filter.category,
+          type: this.filter.type,
+          name: this.dish.name,
+          price: this.dish.price,
+          description: this.dish.description,
+          ccal: this.dish.ccal,
+        }),
+      });
+      if (response.ok === true) {
+        console.log("response patch", response);
+        this.getDishes();
+        return this.reset();
+      }
+    },
+    async createDish() {
+      console.log("test image data", this.dish.image);
+      console.log("test id", this.dish.id);
+      //если блюдо выбрано тогда перебросить на обновление блюда
+      if (this.dish.id) {
+        console.log("test patch");
+        return this.patchDish();
+      }
+      console.log("test duration");
+      const response = await fetch("http://localhost:3000/dishes", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          kind: this.filter.kind,
+          category: this.filter.category,
+          type: this.filter.type,
+          name: this.dish.name,
+          price: this.dish.price,
+          description: this.dish.description,
+          ccal: this.dish.ccal,
+          photo: this.dish.image,
+        }),
+      });
+
+      const dishId = await response.json();
+      const f = await fetch("http://localhost:3000/dishes");
+      const data = await f.json();
+      for (const dishes in data) {
+        if (Object.hasOwnProperty.call(data, dishes)) {
+          const dish = data[dishes];
+          for (let i = 0; i < dish.length; i++) {
+            const d = dish[i];
+            console.log("test d", d);
+            if (d.id === dishId.id) {
+              this.dishes.push(d);
+              this.reset();
+            }
+          }
+        }
+      }
+    },
+    async handleDelete(dishToRemove) {
+      const id = dishToRemove.id;
+      const response = await fetch(`http://localhost:3000/dishes/${id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.ok === true) {
+        this.dishes = this.dishes.filter((d) => d != dishToRemove);
+      }
+      //обновление localStorage (мой вариант)
+      // localStorage.setItem("cryptonomicon-list", JSON.stringify(this.tickers));
     },
   },
 };
