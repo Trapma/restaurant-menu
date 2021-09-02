@@ -69,16 +69,38 @@
                   <v-row sm-justify="start" no-gutters>
                     <v-col sm="9" md="6">
                       <v-autocomplete
+                        v-if="viewKind"
+                        clearable
                         v-model="filter.kind"
                         :items="kindes"
+                        item-color="secondary"
                         filled
                         dense
                         rounded
                         auto-select-first
-                        clearable
                         messages="Вид кухни"
                       ></v-autocomplete>
+                      <v-text-field v-else v-model="filter.kind">
+                        <v-icon
+                          large
+                          @click="createKind()"
+                          slot="append"
+                          color="green"
+                        >
+                          mdi-plus
+                        </v-icon>
+                      </v-text-field>
                     </v-col>
+                    <v-col
+                      ><v-btn
+                        v-if="viewKind"
+                        @click="toogleKind()"
+                        class="ml-5"
+                        color="primary"
+                        elevation="2"
+                        >Добавить новый вид</v-btn
+                      ></v-col
+                    >
                   </v-row>
                 </v-container>
 
@@ -87,6 +109,7 @@
                   <v-row sm-justify="start" no-gutters>
                     <v-col sm="9" md="6">
                       <v-autocomplete
+                        v-if="viewType"
                         v-model="filter.type"
                         :items="types"
                         filled
@@ -96,12 +119,33 @@
                         clearable
                         messages="Тип блюда"
                       ></v-autocomplete>
+                      <v-text-field v-else v-model="filter.type">
+                        <v-icon
+                          large
+                          @click="createType()"
+                          slot="append"
+                          color="green"
+                        >
+                          mdi-plus
+                        </v-icon>
+                      </v-text-field>
                     </v-col>
+                    <v-col
+                      ><v-btn
+                        v-if="viewType"
+                        @click="toogleType()"
+                        class="ml-5"
+                        color="primary"
+                        elevation="2"
+                        >Добавить новый тип</v-btn
+                      ></v-col
+                    >
                   </v-row>
                 </v-container>
 
                 <!-- horizontal line -->
                 <v-divider></v-divider>
+                <h2 class="mt-5">Карточка блюда</h2>
 
                 <!-- create dishCard -->
                 <v-container>
@@ -241,7 +285,7 @@ export default {
 
   data: () => ({
     tabs: null,
-    items: ["Create Dish", "Statistics", "Result"],
+    items: ["Создание блюд", "Статистика", "Конечный результат"],
 
     filter: {
       kind: "",
@@ -269,6 +313,9 @@ export default {
 
     valid: true,
 
+      viewKind: true,
+      viewType: true,
+
     nameRules: [
       (v) => !!v || "Поле не может быть пустым",
       (v) => (v && v.length <= 30) || "Name must be less than 30 characters",
@@ -283,6 +330,10 @@ export default {
       (v) => !!v || "Поле не может быть пустым",
       (v) => (v && !isNaN(Number(v))) || "Введите цифры",
     ],
+
+    // kindRules: [
+    //   item-color:'primary'
+    // ],
     description: "",
   }),
 
@@ -301,10 +352,89 @@ export default {
       });
       return result;
     },
+
+    viewDelBtnKind() {
+      let result = this.kindes.filter((k) => k.includes(this.filter.kind));
+
+      return result[0] === this.filter.kind;
+    },
+
+    viewAddBtnKind() {
+      console.log("test kind", this.filter.kind);
+      let result = this.kindes.filter((k) => k.includes(this.filter.kind));
+      console.log("test boolean", result[0] === this.filter.kind);
+      if (result[0] === this.filter.kind) {
+        console.log("test boolean true");
+        return true;
+      }
+      console.log("test boolean false");
+      return false;
+    },
+
+    viewDelBtnType() {
+      let result = this.types.filter((k) => k.includes(this.filter.type));
+      return result[0] === this.filter.type;
+    },
+    viewCreateType() {
+      return true;
+    },
   },
 
   methods: {
-    //imageLoad
+    toogleKind() {
+      this.viewKind = !this.viewKind
+    },
+
+    toogleType(){
+      this.viewType= !this.viewType
+    },
+
+    async createType() {
+      if (this.filter.type === "" || this.filter.type === undefined) {
+        console.log("test err type placeholder", this.err);
+        return (this.typeErr = this.err);
+      }
+
+      const response = await fetch("http://localhost:3000/type", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name_type: this.filter.type,
+        }),
+      });
+      if (response.ok === true) {
+        this.types.push(this.filter.type);
+        this.toogleType()
+      }
+    },
+    async createKind() {
+      console.log("test create kind start", this.filter.type);
+      if (this.filter.kind === "" || this.filter.kind === undefined) {
+        console.log("err");
+        return (this.kindErr = this.err);
+      }
+      console.log("test go");
+
+      const response = await fetch("http://localhost:3000/kind", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name_kind: this.filter.kind,
+        }),
+      });
+      if (response.ok === true) {
+        this.kindes.push(this.filter.kind);
+        this.toogleKind()
+      }
+    },
+
+    //imageLoad не работает
     imageLoad(data) {
       this.dish.image = data;
       console.log("test image load", this.dish.image);
@@ -379,14 +509,14 @@ export default {
         },
       });
       const data = await response.json();
-      console.log(data);
+      console.log('test data response',data);
+
+      this.dishes = []
       for (const key in data) {
         if (Object.hasOwnProperty.call(data, key)) {
           const dish = data[key];
           for (let i = 0; i < dish.length; i++) {
             const d = dish[i];
-
-            this.dishes = [];
             this.dishes.push(d);
           }
         }
@@ -464,6 +594,7 @@ export default {
       const dishId = await response.json();
       const f = await fetch("http://localhost:3000/dishes");
       const data = await f.json();
+      this.dishes = []
       for (const dishes in data) {
         if (Object.hasOwnProperty.call(data, dishes)) {
           const dish = data[dishes];
