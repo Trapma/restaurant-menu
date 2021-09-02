@@ -1,7 +1,7 @@
 "use strict";
 const express = require("express");
 const cors = require("cors")
-const upload = require('./middleware/upload')
+// const upload = require('./middleware/upload')
 const db = require('./db/restaurantMenu')
 
 
@@ -22,12 +22,12 @@ app.use(cors(corsOptions));
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use('/uploads', express.static('uploads'))
-app.use('/dishes', upload.single('image'))
-app.use("/dishes/:id", upload.single('image'))
+// app.use('/uploads', express.static('uploads'))
+// app.use('/dishes', upload.single('image'))
+// app.use("/dishes/:id", upload.single('image'))
 
 
-app.post("/dishes", upload.single('image'), async (req, res) => {
+app.post("/dishes", async (req, res) => {
   console.log('reqFile test',req.file);
   // res.setHeader("Access-Control-Allow-Origin", req.headers.origin);
   // console.log('reqFile path test', req.file.path);
@@ -43,7 +43,7 @@ app.post("/dishes", upload.single('image'), async (req, res) => {
   }
 
     const results = await db.createDish(data);
-    res.status(201).json(results);
+    res.status(201).json({id: results[0]});
 
 
   console.log(data);
