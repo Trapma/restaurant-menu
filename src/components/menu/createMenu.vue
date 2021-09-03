@@ -223,7 +223,7 @@
                         </v-card-title>
 
                         <!-- если не сработает, нужно создать путь -->
-                        <v-img height="200" v-bind:src="dish.image">
+                        <v-img height="200" :src="dish.photo">
                           <template v-slot:placeholder>
                             <v-row
                               class="fill-height ma-0"
@@ -265,7 +265,10 @@
                   </v-row>
                 </v-container>
               </v-tab-item>
+
+              <!-- statistics -->
               <v-tab-item> </v-tab-item>
+              <!-- results -->
               <v-tab-item> </v-tab-item>
             </v-tabs-items>
           </v-container>
@@ -298,9 +301,10 @@ export default {
       price: "",
       description: "",
       ccal: "",
-      image: "",
+      // image: "",
+      url: "",
     },
-    url: "",
+
     selectedDish: null,
 
     categoryList: [],
@@ -313,8 +317,8 @@ export default {
 
     valid: true,
 
-      viewKind: true,
-      viewType: true,
+    viewKind: true,
+    viewType: true,
 
     nameRules: [
       (v) => !!v || "Поле не может быть пустым",
@@ -382,11 +386,11 @@ export default {
 
   methods: {
     toogleKind() {
-      this.viewKind = !this.viewKind
+      this.viewKind = !this.viewKind;
     },
 
-    toogleType(){
-      this.viewType= !this.viewType
+    toogleType() {
+      this.viewType = !this.viewType;
     },
 
     async createType() {
@@ -407,7 +411,7 @@ export default {
       });
       if (response.ok === true) {
         this.types.push(this.filter.type);
-        this.toogleType()
+        this.toogleType();
       }
     },
     async createKind() {
@@ -421,7 +425,7 @@ export default {
       const response = await fetch("http://localhost:3000/kind", {
         method: "POST",
         headers: {
-          Accept: "application/json",
+          // Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -430,14 +434,14 @@ export default {
       });
       if (response.ok === true) {
         this.kindes.push(this.filter.kind);
-        this.toogleKind()
+        this.toogleKind();
       }
     },
 
     //imageLoad не работает
     imageLoad(data) {
-      this.dish.image = data;
-      console.log("test image load", this.dish.image);
+      console.log('test url to parent = ',data);
+      this.dish.url = data
     },
 
     //dishForm methods
@@ -509,9 +513,9 @@ export default {
         },
       });
       const data = await response.json();
-      console.log('test data response',data);
+      console.log("test data response", data);
 
-      this.dishes = []
+      this.dishes = [];
       for (const key in data) {
         if (Object.hasOwnProperty.call(data, key)) {
           const dish = data[key];
@@ -565,13 +569,12 @@ export default {
       }
     },
     async createDish() {
-      console.log("test image data", this.dish.image);
-      console.log("test id", this.dish.id);
       //если блюдо выбрано тогда перебросить на обновление блюда
       if (this.dish.id) {
         console.log("test patch");
         return this.patchDish();
       }
+
       console.log("test duration");
       const response = await fetch("http://localhost:3000/dishes", {
         method: "POST",
@@ -587,14 +590,15 @@ export default {
           price: this.dish.price,
           description: this.dish.description,
           ccal: this.dish.ccal,
-          photo: this.dish.image,
+          photo: this.dish.url
         }),
       });
 
       const dishId = await response.json();
+      console.log("test dishId", dishId);
       const f = await fetch("http://localhost:3000/dishes");
       const data = await f.json();
-      this.dishes = []
+      console.log("test dishes befor cicle", this.dishes);
       for (const dishes in data) {
         if (Object.hasOwnProperty.call(data, dishes)) {
           const dish = data[dishes];
@@ -603,6 +607,7 @@ export default {
             console.log("test d", d);
             if (d.id === dishId.id) {
               this.dishes.push(d);
+              console.log(this.dishes);
               this.reset();
             }
           }

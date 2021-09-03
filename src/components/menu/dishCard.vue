@@ -1,28 +1,25 @@
 <template>
   <v-card class="mx-auto" max-width="344">
-
     <v-card-title :key="upperName">
       {{ upperName }}
     </v-card-title>
 
-    <v-container
-
-    >
-      <v-card
-      min-height="200"
-      color="grey"
-      @click.stop="selectImage">
-
+    <v-container>
+      <v-card min-height="200" color="grey" @click.stop="selectImage">
         <v-file-input
-          id="uploadImage"
+          type="file"
+          id="input"
           class="d-none"
+          label="upload license"
+          hint="add a picture of youre license"
           hide-input
-          @change="Preview_image"
-          v-model="photo.image"
-
+          ref="myfile"
+          @change="onFileChange"
+          v-model="image"
+          accept="image/*"
         >
         </v-file-input>
-        <v-img height="200" v-if="photo.url" :src="photo.url">
+        <v-img height="200" v-if="imageUrl" :src="imageUrl">
           <template v-slot:placeholder>
             <v-row class="fill-height ma-0" align="center" justify="center">
               <v-progress-circular
@@ -53,10 +50,8 @@ export default {
   data: () => ({
     input: undefined,
     show: false,
-    photo: {
-      url:null,
-      image:null
-    }
+    imageUrl: '',
+    image: undefined,
   }),
 
   props: {
@@ -69,7 +64,7 @@ export default {
   },
 
   mounted() {
-    this.input = document.getElementById("uploadImage");
+    this.input = document.getElementById("input");
   },
   computed: {
     upperName() {
@@ -78,18 +73,34 @@ export default {
   },
 
   methods: {
+    async createImage(file) {
+
+      const reader = new FileReader();
+
+       reader.onload = e => {
+        this.imageUrl = e.target.result;
+        this.sendUrlParent()
+
+      };
+      reader.readAsDataURL(file);
+
+
+    },
+      onFileChange(file) {
+        if(!file){
+          return
+        }
+        this.createImage(file)
+
+      },
+
     selectImage() {
       this.input.click();
     },
 
-    onPreloadImage () {
-      this.$emit('loadImage', this.photo.url)
-    },
+      sendUrlParent () {
 
-    Preview_image() {
-      this.photo.url = URL.createObjectURL(this.photo.image);
-      this.onPreloadImage()
-
+      this.$emit('loadImage', this.imageUrl)
     },
   },
 };
