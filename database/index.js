@@ -66,6 +66,20 @@ app.post("/type", async(req, res) => {
   res.status(201).json({ result })
 })
 
+app.patch("/kind/:id", async(req, res) => {
+  const data = {name_kind: req.body.data}
+  const result = await db.updateKind(req.params.id, data);
+  console.log(data);
+  res.status(201).json({ result })
+})
+
+app.patch("/type/:id", async(req, res) => {
+  const data = {name_type: req.body.data}
+  const id = await db.updateType(req.params.id, data);
+  console.log(data);
+  res.status(201).json({ id })
+})
+
 app.patch("/dishes/:id", async (req, res) => {
 
   const data = {
@@ -83,19 +97,23 @@ app.patch("/dishes/:id", async (req, res) => {
 });
 
 app.get("/dishes", async (req, res) => {
-  const dishes = await db.gettAllDish();
+  const dishes = await db.getDish();
   res.status(200).json({ dishes });
 });
 
-app.get("/kind", async(req, res) => {
-  const kindes = await db.getAllKind()
+app.get("/kinds", async(req, res) => {
+  const kindes = await db.getKind()
   res.status(200).json({ kindes })
+})
+app.get("/types", async(req, res) => {
+  const types = await db.getType()
+  res.status(200).json({ types })
 })
 
 app.get("/data", async (req, res) => {
-  const kind = await db.getAllKind();
-  const category = await db.getAllCategory();
-  const type = await db.getAllType()
+  const kind = await db.getKind();
+  const category = await db.getCategory();
+  const type = await db.getType()
 
   res.status(200).json({ kind, category, type})
 })
@@ -119,11 +137,11 @@ app.delete("/type/:name_type", async (req, res) => {
 
 
 // app.get("/category", async (req, res) => {
-//   const category = await db.getAllCategory();
+//   const category = await db.getCategory();
 //   res.status(200).json({ category });
 // });
 // app.get("/kindOfKitchen", async (req, res) => {
-//   const kind = await db.getAllKind();
+//   const kind = await db.getKind();
 //   res.status(200).json({ kind });
 // });
 

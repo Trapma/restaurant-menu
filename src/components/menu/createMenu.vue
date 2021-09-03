@@ -46,7 +46,7 @@
                     </v-col>
                   </v-row>
                   <v-row no-gutters>
-                    <v-col sm="9" md="6">
+                    <v-col xs="12" sm="9" md="6">
                       <!-- accordion description category -->
                       <v-expansion-panels accordion>
                         <v-expansion-panel v-if="filter.category">
@@ -67,7 +67,7 @@
                 <!-- input kind dish -->
                 <v-container>
                   <v-row sm-justify="start" no-gutters>
-                    <v-col sm="9" md="6">
+                    <v-col cols="12" sm="9" md="6">
                       <v-autocomplete
                         v-if="viewKind"
                         clearable
@@ -80,7 +80,7 @@
                         auto-select-first
                         messages="Вид кухни"
                       ></v-autocomplete>
-                      <v-text-field v-else v-model="filter.kind">
+                      <v-text-field class="pt-0" v-else v-model="filter.kind">
                         <v-icon
                           large
                           @click="createKind()"
@@ -89,25 +89,43 @@
                         >
                           mdi-plus
                         </v-icon>
+                        <v-icon
+                          large
+                          @click="delKind()"
+                          slot="prepend"
+                          color="red"
+                        >
+                          mdi-minus
+                        </v-icon>
                       </v-text-field>
                     </v-col>
-                    <v-col
-                      ><v-btn
+                    <v-col xs="6">
+                      <v-btn
                         v-if="viewKind"
                         @click="toogleKind()"
                         class="ml-5"
                         color="primary"
                         elevation="2"
-                        >Добавить новый вид</v-btn
-                      ></v-col
-                    >
+                      >
+                        <span>{{ typeBtnKind }}</span></v-btn
+                      >
+
+                      <v-btn
+                        v-else
+                        @click="toogleKind()"
+                        class="ml-5 mt-2"
+                        color="secondary"
+                        elevation="2"
+                        >Отмена</v-btn
+                      >
+                    </v-col>
                   </v-row>
                 </v-container>
 
                 <!-- input type dish -->
                 <v-container>
                   <v-row sm-justify="start" no-gutters>
-                    <v-col sm="9" md="6">
+                    <v-col cols="12" sm="9" md="6">
                       <v-autocomplete
                         v-if="viewType"
                         v-model="filter.type"
@@ -119,7 +137,7 @@
                         clearable
                         messages="Тип блюда"
                       ></v-autocomplete>
-                      <v-text-field v-else v-model="filter.type">
+                      <v-text-field class="mt-0" v-else v-model="filter.type">
                         <v-icon
                           large
                           @click="createType()"
@@ -127,6 +145,14 @@
                           color="green"
                         >
                           mdi-plus
+                        </v-icon>
+                        <v-icon
+                          large
+                          @click="delType()"
+                          slot="prepend"
+                          color="red"
+                        >
+                          mdi-minus
                         </v-icon>
                       </v-text-field>
                     </v-col>
@@ -137,14 +163,29 @@
                         class="ml-5"
                         color="primary"
                         elevation="2"
-                        >Добавить новый тип</v-btn
-                      ></v-col
-                    >
+                        ><span>{{ typeBtnType }}</span></v-btn
+                      >
+                      <v-btn
+                        v-else
+                        @click="toogleType()"
+                        class="ml-5 mt-2"
+                        color="secondary"
+                        elevation="2"
+                        >Отмена</v-btn
+                      >
+                    </v-col>
+                  </v-row>
+                  <v-row justify="center" sm-justify="end">
+                    <v-col cols="12" sm-offset="6">
+                      <v-btn color="error" class="ml-5" @click="resetCategory">
+                        Сбросить форму
+                      </v-btn>
+                    </v-col>
                   </v-row>
                 </v-container>
 
                 <!-- horizontal line -->
-                <v-divider></v-divider>
+                <v-divider class="mt-5"></v-divider>
                 <h2 class="mt-5">Карточка блюда</h2>
 
                 <!-- create dishCard -->
@@ -206,6 +247,11 @@
                     </v-col>
                   </v-row>
                 </v-container>
+
+                <!-- horizontal line -->
+                <v-divider class="mt-5"></v-divider>
+                <h2 class="mt-5 mb-5">Созданные блюда</h2>
+
                 <v-container>
                   <v-row>
                     <v-col
@@ -214,7 +260,6 @@
                       :key="dish.id"
                     >
                       <v-card
-
                         outline
                         class="mx-auto mb-10 py-auto"
                         max-width="344"
@@ -241,18 +286,18 @@
                           </v-card>
                         </v-container>
                         <v-container>
-                           <v-expansion-panels accordion>
-                          <v-expansion-panel>
-                            <v-expansion-panel-header
-                              >Описание</v-expansion-panel-header
-                            >
-                            <v-expansion-panel-content>
-                              <v-card-text class="body-1">
-                                {{ dish.description }}
-                              </v-card-text>
-                            </v-expansion-panel-content>
-                          </v-expansion-panel>
-                        </v-expansion-panels>
+                          <v-expansion-panels focusable accordion>
+                            <v-expansion-panel>
+                              <v-expansion-panel-header
+                                >Описание</v-expansion-panel-header
+                              >
+                              <v-expansion-panel-content>
+                                <v-card-text class="body-1">
+                                  {{ dish.description }}
+                                </v-card-text>
+                              </v-expansion-panel-content>
+                            </v-expansion-panel>
+                          </v-expansion-panels>
                         </v-container>
 
                         <v-card-subtitle class="py-0">
@@ -319,6 +364,9 @@ export default {
       imageUrl: "",
     },
 
+    patchK: '',
+    patchT: '',
+
     selectedDish: null,
 
     categoryList: [],
@@ -361,6 +409,12 @@ export default {
   },
 
   computed: {
+    typeBtnKind() {
+      return this.filter.kind ? "Изменить" : "Добавить новый тип";
+    },
+    typeBtnType() {
+      return this.filter.type ? "Изменить" : "Добавить новый тип";
+    },
     categoryInfo() {
       let result;
       this.categories.filter((category) => {
@@ -399,15 +453,122 @@ export default {
   },
 
   methods: {
+    async patchKind() {
+      const id = this.patchK;
+      const response = await fetch(`http://localhost:3000/kind/${id}`, {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+           body: JSON.stringify({
+             data: this.filter.kind
+           })
+      });
+      if (response.ok === true) {
+        const res = await fetch(`http://localhost:3000/kinds`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
+        const getKinds = await res.json();
+        this.kindes = []
+        console.log('test get kind = ', getKinds.kindes);
+
+        getKinds.kindes.forEach(kind => {
+          this.kindes = [... this.kindes, kind.name_kind]
+        });
+        console.log('test kindes', this.kindes);
+        this.toogleKind();
+      }
+    },
+    async patchType() {
+      const id = this.patchT;
+      const response = await fetch(`http://localhost:3000/type/${id}`, {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data:this.filter.type
+        })
+      });
+      if (response.ok === true) {
+        const res = await fetch(`http://localhost:3000/types`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
+        const getType = await res.json()
+        this.types = []
+        console.log('test get type', getType.types);
+         getType.types.forEach(type => {
+          this.types = [... this.types, type.name_type]
+        });
+        console.log('test types', this.types);
+        this.toogleType();
+
+      }
+    },
+
+    async delKind() {
+      const name_kind = this.filter.kind;
+      const response = await fetch(`http://localhost:3000/kind/${name_kind}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+
+      });
+      if (response.ok === true) {
+        this.kindes = this.kindes.filter((k) => k != name_kind);
+        this.filter.kind = "";
+        this.viewKind = true;
+      }
+    },
+
+    async delType() {
+      const name_type = this.filter.type;
+      const response = await fetch(`http://localhost:3000/type/${name_type}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.ok === true) {
+        this.types = this.types.filter((k) => k != name_type);
+        this.filter.type = "";
+        this.viewType = true;
+      }
+    },
+
     toogleKind() {
       this.viewKind = !this.viewKind;
+      if (this.typeBtnKind === "Изменить") {
+        const patch = this.filter.kind
+        return this.patchK = patch
+      }
     },
 
     toogleType() {
       this.viewType = !this.viewType;
+      if(this.typeBtnType === "Изменить") {
+        const patch = this.filter.type
+        return this.patchT = patch
+      }
     },
 
     async createType() {
+      if (this.patchT) {
+        return this.patchType()
+      }
       if (this.filter.type === "" || this.filter.type === undefined) {
         console.log("test err type placeholder", this.err);
         return (this.typeErr = this.err);
@@ -429,6 +590,9 @@ export default {
       }
     },
     async createKind() {
+      if (this.patchK) {
+        return this.patchKind()
+      }
       console.log("test create kind start", this.filter.type);
       if (this.filter.kind === "" || this.filter.kind === undefined) {
         console.log("err");
@@ -475,6 +639,11 @@ export default {
       this.dish.imageUrl = "";
       this.dish.url = "";
       this.$refs.form.resetValidation();
+    },
+    resetCategory() {
+      this.filter.category = "";
+      this.filter.kind = "";
+      this.filter.type = "";
     },
 
     async getData() {
@@ -559,7 +728,7 @@ export default {
       this.dish.ccal = dish.ccal;
       //связываемся с dishCard
       this.dish.imageUrl = dish.photo;
-      this.dish.url = dish.photo
+      this.dish.url = dish.photo;
     },
 
     async patchDish() {

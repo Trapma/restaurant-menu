@@ -23,28 +23,33 @@ async function getMenuId(id) {
     return result
 }
 
-//kind
-
-function createKind(kind) {
-    return knex("kind_of_kitchen").insert(kind);
-}
-function deleteKind(nameKind){
-  return knex("kind_of_kitchen").where("name_kind", nameKind).del();
-}
-
-function getAllKind() {
-    return knex("kind_of_kitchen").select("*")
-}
-
 //category
 
 function createCategory(category) {
     return knex("category").insert(category)
 }
 
-function getAllCategory() {
+function getCategory() {
     return knex("category").select("*")
 }
+
+//kind
+
+function createKind(kind) {
+  return knex("kind_of_kitchen").insert(kind);
+}
+function deleteKind(nameKind){
+return knex("kind_of_kitchen").where("name_kind", nameKind).del();
+}
+
+function getKind() {
+  return knex("kind_of_kitchen").select("*")
+}
+
+function updateKind(id, type) {
+  return knex("kind_of_kitchen").where("name_kind", id).update(type);
+}
+
 
 //type
 
@@ -52,12 +57,16 @@ function createType(type) {
     return knex("type_of_dish").insert(type)
 }
 
-function getAllType() {
+function getType() {
     return knex("type_of_dish").select("*")
 }
 
 function deleteType(nameType){
   return knex("type_of_dish").where("name_type", nameType).del();
+}
+
+function updateType(id, type) {
+  return knex("type_of_dish").where("name_type", id).update(type);
 }
 
 //dishes
@@ -66,7 +75,7 @@ function createDish(dish) {
   return knex("dishes").insert(dish);
 }
 
-function gettAllDish() {
+function getDish() {
   return knex("dishes").select("*")
 }
 
@@ -85,23 +94,25 @@ module.exports = {
   createMenu,
   getMenuId,
 
-  //kind
-  createKind,
-  getAllKind,
-  deleteKind,
-
   //category
   createCategory,
-  getAllCategory,
+  getCategory,
+
+  //kind
+  createKind,
+  getKind,
+  deleteKind,
+  updateKind,
 
   //type
   createType,
-  getAllType,
+  getType,
   deleteType,
+  updateType,
 
   //dish
   createDish,
-  gettAllDish,
+  getDish,
   deleteDish,
   updateDish,
 
