@@ -19,7 +19,7 @@
           accept="image/*"
         >
         </v-file-input>
-        <v-img height="200" v-if="imageUrl" :src="imageUrl">
+        <v-img height="200" :src="dish_data.imageUrl">
           <template v-slot:placeholder>
             <v-row class="fill-height ma-0" align="center" justify="center">
               <v-progress-circular
@@ -50,7 +50,7 @@ export default {
   data: () => ({
     input: undefined,
     show: false,
-    imageUrl: '',
+    imageUrl: "",
     image: undefined,
   }),
 
@@ -69,38 +69,34 @@ export default {
   computed: {
     upperName() {
       return this.dish_data.name.toUpperCase();
-    },
+    }
   },
 
   methods: {
     async createImage(file) {
-
       const reader = new FileReader();
 
-       reader.onload = e => {
-        this.imageUrl = e.target.result;
-        this.sendUrlParent()
-
+      reader.onload = (e) => {
+        this.dish_data.imageUrl = e.target.result;
+        this.sendUrlParent();
       };
       reader.readAsDataURL(file);
-
-
     },
-      onFileChange(file) {
-        if(!file){
-          return
-        }
-        this.createImage(file)
-
-      },
+    onFileChange(file) {
+      if (!file) {
+        return;
+      }
+      this.createImage(file);
+    },
 
     selectImage() {
+        // this.input = v-file-input
       this.input.click();
     },
 
-      sendUrlParent () {
-
-      this.$emit('loadImage', this.imageUrl)
+    sendUrlParent() {
+      this.imageUrl = this.dish_data.imageUrl
+      this.$emit("loadImage", this.imageUrl);
     },
   },
 };

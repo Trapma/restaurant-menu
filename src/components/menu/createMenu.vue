@@ -214,6 +214,7 @@
                       :key="dish.id"
                     >
                       <v-card
+
                         outline
                         class="mx-auto mb-10 py-auto"
                         max-width="344"
@@ -221,26 +222,39 @@
                         <v-card-title>
                           {{ dish.name }}
                         </v-card-title>
-
-                        <!-- если не сработает, нужно создать путь -->
-                        <v-img height="200" :src="dish.photo">
-                          <template v-slot:placeholder>
-                            <v-row
-                              class="fill-height ma-0"
-                              align="center"
-                              justify="center"
+                        <v-container>
+                          <v-card>
+                            <v-img height="200" :src="dish.photo">
+                              <template v-slot:placeholder>
+                                <v-row
+                                  class="fill-height ma-0"
+                                  align="center"
+                                  justify="center"
+                                >
+                                  <v-progress-circular
+                                    indeterminate
+                                    color="grey lighten-5"
+                                  ></v-progress-circular>
+                                </v-row>
+                              </template>
+                            </v-img>
+                          </v-card>
+                        </v-container>
+                        <v-container>
+                           <v-expansion-panels accordion>
+                          <v-expansion-panel>
+                            <v-expansion-panel-header
+                              >Описание</v-expansion-panel-header
                             >
-                              <v-progress-circular
-                                indeterminate
-                                color="grey lighten-5"
-                              ></v-progress-circular>
-                            </v-row>
-                          </template>
-                        </v-img>
+                            <v-expansion-panel-content>
+                              <v-card-text class="body-1">
+                                {{ dish.description }}
+                              </v-card-text>
+                            </v-expansion-panel-content>
+                          </v-expansion-panel>
+                        </v-expansion-panels>
+                        </v-container>
 
-                        <v-card-text class="body-1">
-                          {{ dish.description }}
-                        </v-card-text>
                         <v-card-subtitle class="py-0">
                           <p class="text-right">
                             в порции содержится: {{ dish.ccal }}ккал
@@ -301,8 +315,8 @@ export default {
       price: "",
       description: "",
       ccal: "",
-      // image: "",
       url: "",
+      imageUrl: "",
     },
 
     selectedDish: null,
@@ -440,8 +454,9 @@ export default {
 
     //imageLoad не работает
     imageLoad(data) {
-      console.log('test url to parent = ',data);
-      this.dish.url = data
+      console.log("test url to parent = ", data);
+      this.dish.url = data;
+      console.log("test dish.url", this.dish.url);
     },
 
     //dishForm methods
@@ -457,6 +472,8 @@ export default {
       this.dish.price = "";
       this.dish.description = "";
       this.dish.ccal = "";
+      this.dish.imageUrl = "";
+      this.dish.url = "";
       this.$refs.form.resetValidation();
     },
 
@@ -531,20 +548,25 @@ export default {
       this.selectedDish = dish;
       console.log("selected dish", dish);
 
-      this.filter.kind = dish.kind;
+      this.dish.id = dish.id;
       this.filter.category = dish.category;
+      this.filter.kind = dish.kind;
       this.filter.type = dish.type;
 
       this.dish.name = dish.name;
       this.dish.price = dish.price;
       this.dish.description = dish.description;
       this.dish.ccal = dish.ccal;
-      this.dish.image = dish.image;
-      this.dish.id = dish.id;
+      //связываемся с dishCard
+      this.dish.imageUrl = dish.photo;
+      this.dish.url = dish.photo
     },
 
     async patchDish() {
+      console.log("start patch");
       const id = this.dish.id;
+      console.log("start patch imageUrl", this.dish.imageUrl);
+      console.log("start patch url", this.dish.url);
       const response = await fetch(`http://localhost:3000/dishes/${id}`, {
         method: "PATCH",
         headers: {
@@ -560,6 +582,7 @@ export default {
           price: this.dish.price,
           description: this.dish.description,
           ccal: this.dish.ccal,
+          photo: this.dish.url,
         }),
       });
       if (response.ok === true) {
@@ -590,7 +613,7 @@ export default {
           price: this.dish.price,
           description: this.dish.description,
           ccal: this.dish.ccal,
-          photo: this.dish.url
+          photo: this.dish.url,
         }),
       });
 

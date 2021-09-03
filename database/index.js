@@ -32,10 +32,7 @@ app.use("/dishes/:id", upload.single('image'))
 
 
 app.post("/dishes", async (req, res) => {
-  // console.log('reqBody test',req.body);
-  // console.log('regFiles test', req.file);
-  // res.setHeader("Access-Control-Allow-Origin", req.headers.origin);
-  // console.log('reqFile path test', req.file.path);
+
   const data = {
     kind: req.body.kind,
     category: req.body.category,
@@ -79,7 +76,7 @@ app.patch("/dishes/:id", async (req, res) => {
     price: req.body.price,
     description: req.body.description,
     ccal: req.body.ccal,
-    photo: req.file ? req.file.path : ''
+    photo: req.body.photo
   }
   const id = await db.updateDish(req.params.id, data);
   res.status(200).json({ id });
