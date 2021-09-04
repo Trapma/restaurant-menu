@@ -1,8 +1,19 @@
 # restaurant-menu
 
+
 ## Project setup
 ```
 npm install
+```
+## Database setup
+```
+cd database
+npm install
+```
+
+### Run database server
+```
+npm run start
 ```
 
 ### Compiles and hot-reloads for development
