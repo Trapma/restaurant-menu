@@ -250,15 +250,34 @@
 
                 <!-- horizontal line -->
                 <v-divider class="mt-5"></v-divider>
-                <h2 class="mt-5 mb-5">Созданные блюда</h2>
+                <h2 class="my-5">Созданные блюда</h2>
+
+
+                <v-container v-if="dishes.length > 0">
+                  <v-row>
+                     <v-autocomplete
+                      v-model="filterN"
+                      :items="filterName"
+                      dense
+                      clearable
+                      filled
+                      label="Поиск блюда"
+                    ></v-autocomplete>
+
+                  </v-row>
+                </v-container>
+
+                 <v-divider class="mt-5"></v-divider>
 
                 <v-container>
                   <v-row>
                     <v-col
                       @click="select(dish)"
-                      v-for="dish in dishes"
+
+                      v-for="dish in filteredDishes"
                       :key="dish.id"
                     >
+                    <!-- filterdish -->
                       <v-card
                         outline
                         class="mx-auto mb-10 py-auto"
@@ -326,9 +345,70 @@
               </v-tab-item>
 
               <!-- statistics -->
-              <v-tab-item> </v-tab-item>
+              <v-tab-item>
+                  <h1>Coming soon!</h1>
+              </v-tab-item>
               <!-- results -->
-              <v-tab-item> </v-tab-item>
+              <v-tab-item>
+                <v-container>
+                  <v-row>
+                    <v-col v-for="dish in dishes" :key="dish.id">
+                      <v-card
+                        outline
+                        class="mx-auto mb-10 py-auto"
+                        max-width="344"
+                      >
+                        <v-card-title>
+                          {{ dish.name }}
+                        </v-card-title>
+                        <v-container>
+                          <v-card>
+                            <v-img height="200" :src="dish.photo">
+                              <template v-slot:placeholder>
+                                <v-row
+                                  class="fill-height ma-0"
+                                  align="center"
+                                  justify="center"
+                                >
+                                  <v-progress-circular
+                                    indeterminate
+                                    color="grey lighten-5"
+                                  ></v-progress-circular>
+                                </v-row>
+                              </template>
+                            </v-img>
+                          </v-card>
+                        </v-container>
+                        <v-container>
+                          <v-expansion-panels focusable accordion>
+                            <v-expansion-panel>
+                              <v-expansion-panel-header
+                                >Описание</v-expansion-panel-header
+                              >
+                              <v-expansion-panel-content>
+                                <v-card-text class="body-1">
+                                  {{ dish.description }}
+                                </v-card-text>
+                              </v-expansion-panel-content>
+                            </v-expansion-panel>
+                          </v-expansion-panels>
+                        </v-container>
+
+                        <v-card-subtitle class="py-0">
+                          <p class="text-right">
+                            в порции содержится: {{ dish.ccal }}ккал
+                          </p>
+                        </v-card-subtitle>
+                        <v-row justify="end">
+                          <v-card-title class="mr-4">
+                            <p class="text-right">{{ dish.price }}₽</p>
+                          </v-card-title>
+                        </v-row>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-tab-item>
             </v-tabs-items>
           </v-container>
         </v-card>
@@ -346,6 +426,7 @@ export default {
   },
 
   data: () => ({
+    //item
     tabs: null,
     items: ["Создание блюд", "Статистика", "Конечный результат"],
 
@@ -364,8 +445,8 @@ export default {
       imageUrl: "",
     },
 
-    patchK: '',
-    patchT: '',
+    patchK: "",
+    patchT: "",
 
     selectedDish: null,
 
@@ -397,10 +478,9 @@ export default {
       (v) => (v && !isNaN(Number(v))) || "Введите цифры",
     ],
 
-    // kindRules: [
-    //   item-color:'primary'
-    // ],
     description: "",
+    //filter
+    filterN: ''
   }),
 
   created() {
@@ -409,6 +489,46 @@ export default {
   },
 
   computed: {
+
+    filterName(){
+      let result = []
+      this.dishes.forEach((el)=> {
+        result = [...result, el.name]
+      })
+      return result
+    },
+
+    filteredDishes(){
+      return this.dishes.filter((dish)=>dish.name.includes(this.filterN))
+
+    },
+
+    statisticMenu() {
+      let dishes = {
+        category: [],
+        kind: [],
+        type: [],
+      };
+      this.dishes.forEach((el) => {
+        dishes.category = [...dishes.category, el.category];
+        dishes.kind = [...dishes.kind, el.kind];
+        dishes.type = [...dishes.type, el.type];
+      });
+
+      let result = {
+        category: [],
+        kind: [],
+        type: [],
+      };
+      result.category = [...new Set(dishes.category)];
+      result.kind = new Set(dishes.kind);
+      result.type = [...new Set(dishes.type)];
+
+      console.log("test result uCharDish", result);
+
+      return result;
+    },
+
     typeBtnKind() {
       return this.filter.kind ? "Изменить" : "Добавить новый тип";
     },
@@ -453,6 +573,7 @@ export default {
   },
 
   methods: {
+
     async patchKind() {
       const id = this.patchK;
       const response = await fetch(`http://localhost:3000/kind/${id}`, {
@@ -461,9 +582,9 @@ export default {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-           body: JSON.stringify({
-             data: this.filter.kind
-           })
+        body: JSON.stringify({
+          data: this.filter.kind,
+        }),
       });
       if (response.ok === true) {
         const res = await fetch(`http://localhost:3000/kinds`, {
@@ -474,13 +595,13 @@ export default {
           },
         });
         const getKinds = await res.json();
-        this.kindes = []
-        console.log('test get kind = ', getKinds.kindes);
+        this.kindes = [];
+        console.log("test get kind = ", getKinds.kindes);
 
-        getKinds.kindes.forEach(kind => {
-          this.kindes = [... this.kindes, kind.name_kind]
+        getKinds.kindes.forEach((kind) => {
+          this.kindes = [...this.kindes, kind.name_kind];
         });
-        console.log('test kindes', this.kindes);
+        console.log("test kindes", this.kindes);
         this.toogleKind();
       }
     },
@@ -493,8 +614,8 @@ export default {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          data:this.filter.type
-        })
+          data: this.filter.type,
+        }),
       });
       if (response.ok === true) {
         const res = await fetch(`http://localhost:3000/types`, {
@@ -504,15 +625,14 @@ export default {
             "Content-Type": "application/json",
           },
         });
-        const getType = await res.json()
-        this.types = []
-        console.log('test get type', getType.types);
-         getType.types.forEach(type => {
-          this.types = [... this.types, type.name_type]
+        const getType = await res.json();
+        this.types = [];
+        console.log("test get type", getType.types);
+        getType.types.forEach((type) => {
+          this.types = [...this.types, type.name_type];
         });
-        console.log('test types', this.types);
+        console.log("test types", this.types);
         this.toogleType();
-
       }
     },
 
@@ -524,7 +644,6 @@ export default {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-
       });
       if (response.ok === true) {
         this.kindes = this.kindes.filter((k) => k != name_kind);
@@ -552,22 +671,22 @@ export default {
     toogleKind() {
       this.viewKind = !this.viewKind;
       if (this.typeBtnKind === "Изменить") {
-        const patch = this.filter.kind
-        return this.patchK = patch
+        const patch = this.filter.kind;
+        return (this.patchK = patch);
       }
     },
 
     toogleType() {
       this.viewType = !this.viewType;
-      if(this.typeBtnType === "Изменить") {
-        const patch = this.filter.type
-        return this.patchT = patch
+      if (this.typeBtnType === "Изменить") {
+        const patch = this.filter.type;
+        return (this.patchT = patch);
       }
     },
 
     async createType() {
       if (this.patchT) {
-        return this.patchType()
+        return this.patchType();
       }
       if (this.filter.type === "" || this.filter.type === undefined) {
         console.log("test err type placeholder", this.err);
@@ -591,7 +710,7 @@ export default {
     },
     async createKind() {
       if (this.patchK) {
-        return this.patchKind()
+        return this.patchKind();
       }
       console.log("test create kind start", this.filter.type);
       if (this.filter.kind === "" || this.filter.kind === undefined) {
